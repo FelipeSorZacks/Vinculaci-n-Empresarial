@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Asistencia · QR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">QR</span>
+    <div class="brand-text">
+      <strong>Control de Asistencia</strong>
+      <span>Prototipo · versión de prueba</span>
+    </div>
+  </div>
+  <nav class="role-switch" role="tablist" aria-label="Cambiar de vista">
+    <button class="role-btn active" data-role="participante" role="tab" aria-selected="true">Participante</button>
+    <button class="role-btn" data-role="administrador" role="tab" aria-selected="false">Administrador</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===================== VISTA PARTICIPANTE ===================== -->
+  <section id="view-participante" class="view active">
+    <div class="participant-shell">
+
+      <ol class="step-track" id="p-steps">
+        <li class="step-dot active" data-step="login">1</li>
+        <li class="step-line"></li>
+        <li class="step-dot" data-step="scan">2</li>
+        <li class="step-line"></li>
+        <li class="step-dot" data-step="done">3</li>
+      </ol>
+
+      <!-- Paso 1: login -->
+      <div class="card panel" data-panel="login">
+        <h1>Inicia sesión</h1>
+        <p class="muted">Usa tu cuenta institucional para poder pasar asistencia.</p>
+
+        <label class="field">
+          <span>Nombre completo</span>
+          <input type="text" id="p-nombre" placeholder="Ej. Ana Martínez">
+        </label>
+        <label class="field">
+          <span>Correo institucional</span>
+          <input type="email" id="p-correo" placeholder="usuario@instituto.edu.mx">
+        </label>
+
+        <button class="btn btn-primary" id="p-login-btn">Iniciar sesión con cuenta institucional</button>
+        <p class="error-msg" id="p-login-error"></p>
+        <p class="hint">Dominio institucional válido para esta prueba: <code id="p-domain-hint"></code></p>
+      </div>
+
+      <!-- Paso 2: escaneo -->
+      <div class="card panel hidden" data-panel="scan">
+        <div class="session-row">
+          <div>
+            <h1>Hola, <span id="p-hello-name"></span></h1>
+            <p class="muted" id="p-hello-email"></p>
+          </div>
+          <button class="link-btn" id="p-logout-btn">Cerrar sesión</button>
+        </div>
+
+        <div class="scan-tabs">
+          <button class="scan-tab active" data-mode="camera">Cámara</button>
+          <button class="scan-tab" data-mode="manual">Modo de prueba</button>
+        </div>
+
+        <div class="scan-pane" data-pane="camera">
+          <div id="qr-reader"></div>
+          <button class="btn btn-secondary" id="p-start-camera">Activar cámara</button>
+          <p class="muted small">Apunta la cámara al código QR que proyecta el administrador del evento.</p>
+        </div>
+
+        <div class="scan-pane hidden" data-pane="manual">
+          <p class="muted small">Sin cámara a la mano: elige el evento para simular el escaneo (solo en esta versión de prueba).</p>
+          <label class="field">
+            <span>Evento</span>
+            <select id="p-manual-event"></select>
+          </label>
+          <button class="btn btn-secondary" id="p-manual-scan-btn">Simular escaneo</button>
+        </div>
+
+        <p class="error-msg" id="p-scan-error"></p>
+      </div>
+
+      <!-- Paso 3: confirmación -->
+      <div class="card panel hidden" data-panel="done">
+        <div class="confirm-badge" id="p-confirm-badge">
+          <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M14 27l7 7 17-17"/></svg>
+        </div>
+        <h1 id="p-confirm-title">Asistencia registrada</h1>
+        <div class="confirm-details">
+          <div><span>Evento</span><strong id="p-confirm-event">—</strong></div>
+          <div><span>Hora</span><strong id="p-confirm-time">—</strong></div>
+        </div>
+        <p class="muted small" id="p-confirm-note"></p>
+        <button class="btn btn-primary" id="p-again-btn">Registrar otra asistencia</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== VISTA ADMINISTRADOR ===================== -->
+  <section id="view-administrador" class="view">
+    <div class="admin-shell">
+
+      <aside class="admin-sidebar">
+        <div class="admin-session card">
+          <label class="field tight">
+            <span>Cuenta de administrador</span>
+            <input type="email" id="a-correo" placeholder="admin@instituto.edu.mx">
+          </label>
+          <button class="btn btn-primary btn-block" id="a-login-btn">Iniciar sesión</button>
+          <p class="error-msg" id="a-login-error"></p>
+        </div>
+
+        <nav class="admin-nav" id="a-nav">
+          <button class="admin-nav-btn active" data-tab="crear">＋ Crear evento</button>
+          <button class="admin-nav-btn" data-tab="eventos">Eventos</button>
+          <button class="admin-nav-btn" data-tab="config">Configuración</button>
+        </nav>
+
+        <div class="admin-settings card">
+          <span class="settings-label">Dominio institucional</span>
+          <input type="text" id="a-domain" value="instituto.edu.mx">
+          <button class="link-btn" id="a-domain-save">Guardar dominio</button>
+        </div>
+      </aside>
+
+      <div class="admin-main" id="a-main">
+
+        <p class="banner-warn hidden" id="a-session-banner">Inicia sesión con una cuenta de administrador para crear o gestionar eventos.</p>
+
+        <!-- Crear evento -->
+        <div class="admin-tab active" data-tab="crear">
+          <h1>Crear evento</h1>
+          <p class="muted">Define la junta o actividad; al guardar se genera su código QR único.</p>
+          <form id="a-event-form" class="grid-form">
+            <label class="field">
+              <span>Nombre del evento</span>
+              <input type="text" id="ev-nombre" placeholder="Ej. Consejo Técnico Escolar" required>
+            </label>
+            <label class="field">
+              <span>Fecha</span>
+              <input type="date" id="ev-fecha" required>
+            </label>
+            <label class="field">
+              <span>Lugar</span>
+              <input type="text" id="ev-lugar" placeholder="Ej. Auditorio principal">
+            </label>
+            <button type="submit" class="btn btn-primary">Generar evento y código QR</button>
+          </form>
+        </div>
+
+        <!-- Lista de eventos -->
+        <div class="admin-tab" data-tab="eventos">
+          <h1>Eventos</h1>
+          <p class="muted">Selecciona un evento para ver su QR y su lista de asistentes en tiempo real.</p>
+          <div class="events-layout">
+            <ul class="events-list" id="a-events-list"></ul>
+            <div class="event-detail card" id="a-event-detail">
+              <p class="empty-state">Selecciona un evento de la lista.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuración -->
+        <div class="admin-tab" data-tab="config">
+          <h1>Configuración</h1>
+          <p class="muted">Ajustes generales de esta versión de prueba.</p>
+          <div class="card">
+            <p><strong>Almacenamiento:</strong> los datos se guardan localmente en este navegador (localStorage), solo para fines de prueba.</p>
+            <button class="btn btn-danger" id="a-reset-btn">Borrar todos los datos de prueba</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
